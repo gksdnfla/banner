@@ -304,3 +304,53 @@ function forEach(obj, fn) {
     }
 }
 ```
+
+封装好 css 方法一以后可以用这个方法了
+
+```JavaScript
+oUl.className = "banner-list";
+oUl.style.width = "100%";
+oUl.style.height = "100%";
+oUl.style.listStyle = "none";
+oUl.style.margin = "0";
+oUl.style.padding = "0";
+oUl.style.overflow = "hidden";
+oUl.style.position = "absolute";
+oUl.style.left = "0";
+oUl.style.top = "0";
+// 改成
+css(oUl, {
+    width: "100%",
+    height: "100%",
+    listStyle: "none",
+    margin: 0,
+    padding: 0,
+    overflow: "hidden",
+    position: "absolute",
+    left: 0,
+    top: 0
+});
+
+oLi.style.width = "100%";
+oLi.style.height = "100%";
+i == 0 ? (oLi.style.opacity = "1") : (oLi.style.opacity = "0");
+oLi.style.transition = "0.3s ease";
+oLi.style.position = "absolute";
+oLi.style.left = "0";
+oLi.style.top = "0";
+// 改成
+css(oLi, {
+    width: "100%",
+    height: "100%",
+    opacity: i == 0 ? 1 : 0,
+    transition: "0.3s ease",
+    position: "absolute",
+    left: 0,
+    top: 0
+});
+
+oImg.style.width = "100%";
+// 改成
+css(oImg, "width", "100%");
+// 最后一个改不改感觉没啥区别，封装了这种方式就这么用吧。。。。
+```

@@ -31,7 +31,7 @@
 </ul>
 ```
 
-> 我们的图片是多个的，所以他是一个无序的列表图片，所以用 ul，li 标签来搭结构。然后轮播图的片都是有一个链接的，可以进行点击，这时候用的是 a 标签。*其实我们可以用 javascript 来模拟 a 标签。但是一般的轮播图都是放一些活动，广告图片的。是为了吸引顾客，所以我们需要做一个语义标签让这些活动页，能让搜索引擎找到他，并能在搜索引擎提高优先级。所以我们选 a 标签来让这个链接在搜索引擎提高优先级。*然后用 img 标签来显示图片。（_其实用背景图更方便，如果不想提高图片的搜索引擎优先级可以选择用背景图的方式去显示，如果图片需要提高搜索引擎的优先级，那需要用语义的标签来去显示这张图片。_）
+> 我们的图片是多个的，所以他是一个无序的列表图片，用 ul，li 标签来搭结构。然后轮播图的片都是有一个链接的，可以进行点击，这时候用的是 a 标签。（**其实我们可以用 javascript 来模拟 a 标签。但是一般的轮播图都是放一些活动，广告图片的。是为了吸引顾客，所以我们需要做一个语义标签让这些活动页，能让搜索引擎找到他，并能在搜索引擎提高优先级。所以我们选 a 标签来让这个链接在搜索引擎提高优先级。**）然后用 img 标签来显示图片。（**其实用背景图更方便，如果不想提高图片的搜索引擎优先级可以选择用背景图的方式去显示，如果图片需要提高搜索引擎的优先级，那需要用语义的标签来去显示这张图片。**）
 
 再来看 CSS
 
@@ -212,4 +212,97 @@ Banner.prototype.autoPlay = function() {
     aLi[that.count].style.opacity = 1;
   }, this.options.time);
 };
+```
+
+我们给样式的时候是一个一个给的，这么给样式很麻烦，所以模仿 jquery 里的 css 方法封装一个函数
+
+```JavaScript
+function css(elements) {
+    // 判断elements是不是数组
+    if (elements instanceof Array) {
+        // 判断elements的第一个元素是不是对象
+        if (typeof elements[0] !== "object") {
+            console.error("first argument is not Dom element list!");
+            return;
+        }
+    } else {
+        // 判断elements是不是对象
+        if (typeof elements !== "object") {
+            console.error("first argument is not Dom element!");
+            return;
+        }
+    }
+    // 如果参数elements是一个数组，就把参数elements赋值到变量elements
+    // 如果参数elements不是，把参数elements放到数组赋值到变量elements
+    // 这是为了让elements保持是一个数组
+    var elements = elements instanceof Array ? elements : [elements];
+    // 为了内部函数也能访问到当前函数的arguments，赋值到arg
+    var arg = arguments;
+
+    // 在JQuery里传进一个参数的时候是有两种情况的
+    if (arg.length === 2) {
+        switch (typeof arg[1]) {
+            // 参数是string的时候，就返回第一个元素的样式
+            case "string":
+                return elements[0].style[arg[1]];
+                break;
+            // 参数是json的时候，把样式赋给所有元素
+            case "object":
+                // forEach 封装在下面，这个跟Es6的封装差不多，不同的地方就是可以循环对象
+                forEach(elements, function(element) {
+                    forEach(arg[1], function(styleVal, styleName) {
+                        element.style[styleName] = styleVal;
+                    });
+                });
+                break;
+            // 如果参数是其他类型就报错，这是自己加的错误提示
+            default:
+                console.error(
+                    "The second argument is not string or object!"
+                );
+                return;
+        }
+        // Jquery里两个参数的时候是只有一个样式的，只要把一个样式赋值到所有元素就好
+    } else if (arg.length === 3) {
+        // 因为第一个参数肯定是一个string
+        // 第二个参数有两种类型，string和number
+        // 我自己给了限制，并提示错误
+        if (
+            typeof arg[1] !== "string" &&
+            (typeof arg[2] !== "string" || typeof arg[2] !== "number")
+        ) {
+            console.error("The second and third arguments is not string!");
+            return;
+        }
+
+        forEach(elements, function(element) {
+            element.style[arg[1]] = arg[2];
+        });
+    }
+}
+```
+
+> forEach 封装
+
+```JavaScript
+function forEach(obj, fn) {
+    // 判断obj是不是一个对象，如果不是报错
+    if (typeof obj !== "object") {
+        console.error("The first argument is not Array or Object!");
+        return;
+    }
+
+    // 循环的时候其实都可以用 for in 循环, 但是 for in 循环比for循环慢
+    // 为了性能优化我去判断了是不是数组
+    if (obj instanceof Array) {
+        for (var i = 0; i < obj.length; i++) {
+            //判断fn是不是函数，如果是函数就运行fn
+            typeof fn==='function' && fn(obj[i], i, obj);
+        }
+    } else {
+        for (var key in obj) {
+            typeof fn==='function' && fn(obj[key], key, obj);
+        }
+    }
+}
 ```

@@ -9,28 +9,36 @@
 <script type="text/JavaScript">
 window.onload = function() {
 	// 创建Banner对象
-	new Banner("#bannerBox", [
+	new Banner(
+		"#bannerBox",
+		[
+			{
+				src: "../images/1.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/2.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/3.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/4.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/5.jpg",
+				link: "javascript:void(0);"
+			}
+		],
 		{
-			src: "../images/1.jpg",
-			link: "javascript:void(0);"
-		},
-		{
-			src: "../images/2.jpg",
-			link: "javascript:void(0);"
-		},
-		{
-			src: "../images/3.jpg",
-			link: "javascript:void(0);"
-		},
-		{
-			src: "../images/4.jpg",
-			link: "javascript:void(0);"
-		},
-		{
-			src: "../images/5.jpg",
-			link: "javascript:void(0);"
+			autoPlay: true,
+			wheelEvent: true,
+			showIcon: true
 		}
-	]);
+	);
 };
 </script>
 </head>

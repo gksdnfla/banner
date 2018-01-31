@@ -230,10 +230,10 @@ function css(elements) {
             return;
         }
     }
-    // 如果参数elements是一个数组，就把参数elements赋值到变量elements
-    // 如果参数elements不是，把参数elements放到数组赋值到变量elements
+    // 判断elements参数是不是一个数组或者是伪数组，这个时候就直接用elements参数
+    // 如果elements参数不是数组和伪数组，就装进数据里
     // 这是为了让elements保持是一个数组
-    var elements = elements instanceof Array ? elements : [elements];
+    var elements = elements[0] ? elements : [elements];
     // 为了内部函数也能访问到当前函数的arguments，赋值到arg
     var arg = arguments;
 
@@ -292,14 +292,15 @@ function forEach(obj, fn) {
 
     // 循环的时候其实都可以用 for in 循环, 但是 for in 循环比for循环慢
     // 为了性能优化我去判断了是不是数组
-    if (obj instanceof Array) {
+    // 没有用instanceof来判断的原因是因为Js里伪数组，伪数组也可以用for循环来循环。
+    if (obj.length) {
         for (var i = 0; i < obj.length; i++) {
             //判断fn是不是函数，如果是函数就运行fn
-            typeof fn==='function' && fn(obj[i], i, obj);
+            typeof fn === "function" && fn(obj[i], i, obj);
         }
     } else {
         for (var key in obj) {
-            typeof fn==='function' && fn(obj[key], key, obj);
+            typeof fn === "function" && fn(obj[key], key, obj);
         }
     }
 }
@@ -353,4 +354,230 @@ oImg.style.width = "100%";
 // 改成
 css(oImg, "width", "100%");
 // 最后一个改不改感觉没啥区别，封装了这种方式就这么用吧。。。。
+```
+
+开始封装滚轮事件绑定
+
+> 如果这是上没有兼容问题，那我们的开发就很简单。碰到这种每个浏览器用的别的事件的时候是最让我们前端蛋疼的。只能吐槽吐槽。
+
+```JavaScript
+function wheelEvent(obj, upFn, downFn) {
+    var prefix = "";
+    var _addEventListener = "";
+    var support = "";
+
+    // 判断浏览器支不支持addEventListener方法
+    if (window.addEventListener) {
+        // 如果支持用addEventListener
+        _addEventListener = "addEventListener";
+    } else {
+        // 如果不支持用attachEvent
+        _addEventListener = "attachEvent";
+        // *attachEvent绑定事件的时候前面要加on,所以给prefix存on，等绑定的时候用
+        prefix = "on";
+    }
+
+    // 判断该用哪一个事件
+    support =
+        "onwheel" in document.createElement("div")
+            ? "wheel"
+            : document.onmousewheel !== undefined
+                ? "mousewheel"
+                : "DOMMouseScroll";
+
+    // 事件绑定
+    obj[_addEventListener](prefix + support, function(ev) {
+        var oEvent = ev || window.event;
+
+        // 滚动方向 true为往下，false为网上
+        var down = oEvent.wheelDelta
+            ? oEvent.wheelDelta < 0
+            : oEvent.wheelDelta > 0;
+
+        // 往下滚动，调用downFn callback
+        // 网上滚动，调用upFn callback
+        if (down) downFn && downFn(oEvent);
+        else upFn && upFn(oEvent);
+    });
+}
+```
+
+封装下一个轮播图方法
+
+> 这个代码其实已经写过了，我们在自动播放的时候，定时器里的代码就是切换图片的代码，所以直接复制粘贴就好了
+
+```JavaScript
+Banner.prototype.next = function() {
+    var aLi = this.element.querySelectorAll(".banner-list li");
+
+    // 先把当前显示的图片隐藏
+    aLi[this.count].style.opacity = 0;
+    // 把count改成要显示的图片索引
+    this.count++;
+    // 防止count多余images的长度 *其实可以用if来判断，我这里用这种方式来防止
+    this.count %= this.images.length;
+    // 把要显示的图片显示出来
+    aLi[this.count].style.opacity = 1;
+};
+```
+
+封装上一个轮播图方法，这个方法跟 next 方法很想，只需要在 next 方法稍微改一改就好了
+
+```JavaScript
+Banner.prototype.prev = function() {
+    var aLi = this.element.querySelectorAll(".banner-list li");
+
+    // 先把当前显示的图片隐藏
+    aLi[this.count].style.opacity = 0;
+    // 把count改成要显示的图片索引
+    this.count--;
+    // 防止count少于0
+    if (this.count < 0) this.count = this.images.length - 1;
+    // 把要显示的图片显示出来
+    aLi[this.count].style.opacity = 1;
+};
+```
+
+我们要根据滚轮的方向决定播放上一张图片还是下一张图片
+
+```JavaScript
+Banner.prototype.wheelEvent = function() {
+    var that = this;
+
+    wheelEvent(
+        window,
+        function(ev) {
+            window.clearTimeout(that.upTimer);
+            // 给一个定时器，防止滚一次换多张图片
+            that.upTimer = window.setTimeout(function() {
+                that.prev();
+                // 自动播放的方法有一些变化
+                that.options.autoPlay && that.autoPlay();
+            }, 50);
+        },
+        function(ev) {
+            window.clearTimeout(that.downTimer);
+            // 给一个定时器，防止滚一次换多张图片
+            that.downTimer = window.setTimeout(function() {
+                that.next();
+                that.options.autoPlay && that.autoPlay();
+            }, 50);
+        }
+    );
+};
+```
+
+用滚轮切换图片的时候，我们得关掉自动播放的定时器，等图片切换以后重新开启定时器。所以需要改一下自动播放的方法
+
+```JavaScript
+Banner.prototype.autoPlay = function() {
+    // 因为定时器里的匿名函数，把this指向改成了window，所以我们用变量来存起来，在定时器里调用。
+    var that = this;
+
+    // 定时器运行之前需要先清一下定时器，这样第二次调用这个方法的时候会清掉定时器重新计时。
+    window.clearInterval(this.autoTimer);
+    // 定时器
+    this.autoTimer = window.setInterval(function() {
+        that.next();
+    }, this.options.time);
+};
+```
+
+再做一个 Icon，显示播放到第几张图片了
+
+> 创建 icon 的方法跟创建图片很想，所以没有加注释
+
+```JavaScript
+Banner.prototype.createIcon = function() {
+    var oOl = document.createElement("ol");
+    var width = 20;
+
+    css(oOl, {
+        width: width + "px",
+        listStyle: "none",
+        padding: 0,
+        margin: 0,
+        position: "absolute",
+        right: "30px",
+        top: "50%",
+        transform: "translateY(-50%)"
+    });
+    oOl.className = "icon-list";
+
+    forEach(this.images, function(item, index) {
+        var oLi = document.createElement("li");
+
+        css(oLi, {
+            width: width + "px",
+            height: width + "px",
+            backgroundColor:
+                index === 0
+                    ? "rgba(255, 255, 255, 0.8)"
+                    : "rgba(255, 255, 255, 0.3)",
+            margin: "10px 0",
+            borderRadius: "50%"
+        });
+
+        oOl.appendChild(oLi);
+    });
+
+    this.element.appendChild(oOl);
+};
+Banner.prototype.activeIcon = function() {
+	if (!this.options.showIcon) return;
+
+    // 获取所有icon标签
+    var aLi = this.element.querySelectorAll(".icon-list li");
+
+    // 所有icon改成没有点亮
+    css(aLi, "background", "rgba(255, 255, 255, 0.3)");
+    // 给当前显示的icon点亮
+    css(aLi[this.count], "background", "rgba(255, 255, 255, 0.8)");
+};
+```
+
+然后再 options 里添加别的参数
+
+```JavaScript
+window.Banner = function(obj, images, options) {
+    this.element = null;
+    this.images = images;
+    this.options = options || {};
+    // 播放间隔默认为5秒
+    this.options.time = this.options.time || 5000;
+    // 默认为自动播放
+    this.options.autoPlay = this.options.autoPlay || true;
+    // 是否调用滚轮事件，默认为false
+    this.options.wheelEvent = this.options.wheelEvent || false;
+    // 是否显示icon
+    this.options.showIcon = this.options.showIcon || true;
+
+    // 判断obj是个字符串还是对象，如果是字符串就选择这个元素，如果是对象赋给element，如果不是字符串或者是对象就停止运行代码
+    switch (typeof obj) {
+        case "string":
+            this.element = document.querySelector(obj);
+            break;
+        case "object":
+            this.element = obj;
+            break;
+        default:
+            console.error("The first argument is not selector or element!");
+            return;
+    }
+    // 判断images是不是数组，如果不是就停止运行代码
+    if (!this.images instanceof Array) {
+        console.error("The second argument is not Array!");
+        return;
+    }
+
+    // 当前播放图片的索引
+    this.count = 0;
+    // 创建元素 *下面有这个方法的封装
+    this.createElement();
+
+    // 自动播放
+    if (this.options.autoPlay === true) this.autoPlay();
+    // 滚轮事件
+    if (this.options.wheelEvent === true) this.wheelEvent();
+};
 ```

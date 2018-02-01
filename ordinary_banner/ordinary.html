@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<script src="./ordinary_banner.js"></script>
+<script>
+window.onload = function() {
+	new Banner(
+		"#banner",
+		[
+			{
+				src: "../images/1.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/2.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/3.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/4.jpg",
+				link: "javascript:void(0);"
+			},
+			{
+				src: "../images/5.jpg",
+				link: "javascript:void(0);"
+			}
+		],
+		{
+			autoPlay: false,
+			wheelEvent: false,
+			showIcon: false
+		}
+	);
+};
+</script>
+</head>
+<body>
+    <div id="banner"></div>
+</body>
+</html>

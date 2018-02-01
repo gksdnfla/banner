@@ -1,6 +1,6 @@
 /*
  * 为了有些有些函数不对外公布，用了函数自调用。
- */
+ **/
 (function() {
 	/*
 	 * 创建Banner对象
@@ -15,11 +15,14 @@
 		// 播放间隔默认为5秒
 		this.options.time = this.options.time || 5000;
 		// 默认为自动播放
-		this.options.autoPlay = this.options.autoPlay || true;
+		this.options.autoPlay =
+			"autoPlay" in this.options ? this.options.autoPlay : true;
 		// 是否调用滚轮事件，默认为false
-		this.options.wheelEvent = this.options.wheelEvent || false;
+		this.options.wheelEvent =
+			"wheelEvent" in this.options ? this.options.wheelEvent : true;
 		// 是否显示icon
-		this.options.showIcon = this.options.showIcon || true;
+		this.options.showIcon =
+			"showIcon" in this.options ? this.options.showIcon : true;
 
 		// 判断obj是个字符串还是对象，如果是字符串就选择这个元素，如果是对象赋给element，如果不是字符串或者是对象就停止运行代码
 		switch (typeof obj) {

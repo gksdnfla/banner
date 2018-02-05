@@ -71,7 +71,7 @@ body, ul, li {
 ```javascript
 window.onload = function() {
 	var aLi = document.querySelector(".banner-list li");
-	var count = 0; //当先显示的图片的索引
+	var count = 0; //当前图片显示的索引
 	var length = aLi.length;
 
 	window.setInterval(function() {
@@ -128,7 +128,7 @@ function Banner(obj, images, options) {
     return;
   }
 
-  // 当前播放图片的索引
+  // 当前图片显示的索引
   this.count = 0;
   // 创建元素 *下面有这个方法的封装
   this.createElement();

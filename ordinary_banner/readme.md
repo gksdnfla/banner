@@ -1,3 +1,6 @@
+> 效果 [https://gksdnfla.github.io/banner/easy_banner/easy_banner.html](https://gksdnfla.github.io/banner/easy_banner/easy_banner.html)
+> 源码 [https://github.com/gksdnfla/banner/tree/master/ordinary_banner](https://github.com/gksdnfla/banner/tree/master/ordinary_banner)
+
 #开始第二个轮播图
 
 这期的轮播图效果是平滑的效果，首先图片的切换方式添加到三种，点击、拖拽、滚动。这回的功能复杂度会上升很多。
@@ -55,8 +58,183 @@ window.Banner = function(obj, images, options) {
 }
 ```
 
-开始创建 Dom。这个函数也跟之前一样的，直接复制。
+开始创建 Dom。这个函数跟之前差不多，有一些样式的改动。
 
 ```JavaScript
+Banner.prototype.createElement = function() {
+    var that = this;
+    var oUl = document.createElement("ul");
 
+    css(this.element, {
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        position: "absolute",
+        left: 0,
+        top: 0
+    });
+
+    // 给ul样式和class
+    oUl.className = "banner-list";
+    css(oUl, {
+        width: "100%",
+        height: "100%",
+        listStyle: "none",
+        margin: 0,
+        padding: 0,
+        position: "absolute",
+        left: 0,
+        top: 0
+    });
+
+    // li,a,img标签都是跟图片的数量一样，所以我们用循环创建元素
+    for (var i = 0; i < this.images.length; i++) {
+        // 创建li,a,img元素
+        var oLi = document.createElement("li");
+        var oAchor = document.createElement("a");
+        var oImg = document.createElement("img");
+
+        // 给li加样式
+        css(oLi, {
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            position: "absolute",
+            left: 0,
+            top: 0,
+            zIndex: this.count == i ? 1 : 0
+        });
+
+        // 给a元素加href  *this.images是传进来的参数
+        oAchor.href = this.images[i].link;
+
+        // 给img元素加样式并给图片路径  *this.images是传进来的参数
+        css(oImg, "width", "100%");
+        oImg.src = this.images[i].src;
+
+        // li元素添加在ul元素里，a元素添加在li元素里，img元素添加在a元素里
+        oUl.appendChild(oLi);
+        oLi.appendChild(oAchor);
+        oAchor.appendChild(oImg);
+    }
+
+    // 把ul元素添加到传进来的元素里
+    this.element.appendChild(oUl);
+
+    // 给ul添加动画结束事件
+    oUl.addEventListener("transitionend", function() {
+        // 动画结束的时候把动画清掉
+        css(oUl, "transition", "");
+        window.setTimeout(function() {
+            // 把图片恢复到默认样式
+            that.clearQueue();
+            // 把ul的位置恢复到0
+            css(oUl, "left", 0);
+        });
+    });
+};
+```
+
+图片切换的时候需要有平移的动画，所以我们需要动画播放前做一个排版
+
+```JavaScript
+Banner.prototype.queue = function() {
+    // 计算上一个图片的索引
+    var prev = this.count == 0 ? this.images.length - 1 : this.count - 1;
+    // 计算下一个图片的索引
+    var next = this.count == this.images.length - 1 ? 0 : this.count + 1;
+    // 获取所有Li
+    var aLi = this.element.querySelectorAll(".banner-list li");
+
+    // 把上一个图片移动到左边，并加上zIndex，防止图片看不到
+    css(aLi[prev], {
+        left: "-100%",
+        zIndex: 1
+    });
+    // 把下一个图片移动到右边，并加上zIndex，防止图片看不到
+    css(aLi[next], {
+        left: "100%",
+        zIndex: 1
+    });
+};
+```
+
+等动画结束以后需要清空排版，防止下次播放的时候排版出错
+
+```JavaScript
+Banner.prototype.clearQueue = function() {
+    var that = this;
+    // 获取所有Li
+    var aLi = this.element.querySelectorAll(".banner-list li");
+    // 把样式恢复到默认
+    forEach(aLi, function(oLi, index) {
+        css(oLi, {
+            left: 0,
+            top: 0,
+            zIndex: that.count == index ? 1 : 0
+        });
+    });
+};
+```
+
+最后需要做一些图片切换和自动播放，切换图片跟之前稍微有变动，但是自动播放还是跟之前一样
+
+```JavaScript
+/*
+ * 下一个图片
+ **/
+Banner.prototype.next = function() {
+    var oUl = this.element.querySelector(".banner-list");
+
+    // 把图片排列
+    this.queue();
+
+    // 把索引++，并限制不要超过图片数量
+    this.count++;
+    if (this.count > this.images.length - 1) {
+        this.count = 0;
+    }
+
+    // 给ul加动画，等播放完把动画干掉
+    css(oUl, "transition", "0.6s ease");
+    // 给代码延迟，为了让left有移动效果
+    window.setTimeout(function() {
+        css(oUl, "left", "-100%");
+    });
+};
+/*
+ * 上一个图片
+ **/
+Banner.prototype.prev = function() {
+	var oUl = this.element.querySelector(".banner-list");
+
+	// 把图片排列
+	this.queue();
+
+	// 把索引--，并限制不要低于0
+	this.count--;
+	if (this.count < 0) {
+		this.count = this.images.length - 1;
+	}
+
+	// 给ul加动画，等播放完把动画干掉
+	css(oUl, "transition", "0.6s ease");
+	// 给代码延迟，为了让left有移动效果
+	window.setTimeout(function() {
+		css(oUl, "left", "-100%");
+	});
+};
+
+/*
+ * 自动播放
+ **/
+Banner.prototype.autoPlay = function() {
+	var that = this;
+
+	// 先清空定时器，在进行自动播放
+	window.setInterval(this.autoPlayTimer);
+	this.autoPlayTimer = window.setInterval(function() {
+		that.next();
+	}, this.options.time);
+};
 ```

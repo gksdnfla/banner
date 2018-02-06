@@ -1,4 +1,4 @@
-> 效果 [https://gksdnfla.github.io/banner/ordinary_banner/ordinary_banner.html](https://gksdnfla.github.io/banner/easy_banner/easy_banner.html)
+> 效果 [https://gksdnfla.github.io/banner/ordinary_banner/ordinary_banner.html](https://gksdnfla.github.io/banner/ordinary_banner/ordinary_banner.html)
 > 源码 [https://github.com/gksdnfla/banner/tree/master/ordinary_banner](https://github.com/gksdnfla/banner/tree/master/ordinary_banner)
 
 #开始第二个轮播图

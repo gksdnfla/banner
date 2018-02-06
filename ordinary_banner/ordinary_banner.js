@@ -59,7 +59,17 @@
 	 * 创建元素
 	 **/
 	Banner.prototype.createElement = function() {
+		var that = this;
 		var oUl = document.createElement("ul");
+
+		css(this.element, {
+			width: "100%",
+			height: "100%",
+			overflow: "hidden",
+			position: "absolute",
+			left: 0,
+			top: 0
+		});
 
 		// 给ul样式和class
 		oUl.className = "banner-list";
@@ -69,7 +79,6 @@
 			listStyle: "none",
 			margin: 0,
 			padding: 0,
-			overflow: "hidden",
 			position: "absolute",
 			left: 0,
 			top: 0
@@ -86,11 +95,11 @@
 			css(oLi, {
 				width: "100%",
 				height: "100%",
-				opacity: i == 0 ? 1 : 0,
-				transition: "0.3s ease",
+				overflow: "hidden",
 				position: "absolute",
 				left: 0,
-				top: 0
+				top: 0,
+				zIndex: this.count == i ? 1 : 0
 			});
 
 			// 给a元素加href  *this.images是传进来的参数
@@ -108,6 +117,116 @@
 
 		// 把ul元素添加到传进来的元素里
 		this.element.appendChild(oUl);
+
+		// 给ul添加动画结束事件
+		oUl.addEventListener("transitionend", function() {
+			css(oUl, "transition", "");
+			window.setTimeout(function() {
+				that.clearQueue();
+				css(oUl, "left", 0);
+			});
+		});
+	};
+
+	/*
+     * 图片排版
+     * 我们需要在图片切换的时候把图片排列好
+     * 等播放完以后需要回复到原来的位置
+     **/
+	Banner.prototype.queue = function() {
+		// 计算上一个图片的索引
+		var prev = this.count == 0 ? this.images.length - 1 : this.count - 1;
+		// 计算下一个图片的索引
+		var next = this.count == this.images.length - 1 ? 0 : this.count + 1;
+		// 获取所有Li
+		var aLi = this.element.querySelectorAll(".banner-list li");
+
+		// 把上一个图片移动到左边，并加上zIndex，防止图片看不到
+		css(aLi[prev], {
+			left: "-100%",
+			zIndex: 1
+		});
+		// 把下一个图片移动到右边，并加上zIndex，防止图片看不到
+		css(aLi[next], {
+			left: "100%",
+			zIndex: 1
+		});
+	};
+
+	/*
+     * 把图片恢复到原来位置
+     **/
+	Banner.prototype.clearQueue = function() {
+		var that = this;
+		// 获取所有Li
+		var aLi = this.element.querySelectorAll(".banner-list li");
+		// 把样式恢复到默认
+		forEach(aLi, function(oLi, index) {
+			css(oLi, {
+				left: 0,
+				top: 0,
+				zIndex: that.count == index ? 1 : 0
+			});
+		});
+	};
+
+	/*
+     * 下一个图片
+     **/
+	Banner.prototype.next = function() {
+		var oUl = this.element.querySelector(".banner-list");
+
+		// 把图片排列
+		this.queue();
+
+		// 把索引++，并限制不要超过图片数量
+		this.count++;
+		if (this.count > this.images.length - 1) {
+			this.count = 0;
+		}
+
+		// 给ul加动画，等播放完把动画干掉
+		css(oUl, "transition", "0.6s ease");
+		// 给代码延迟，为了让left有移动效果
+		window.setTimeout(function() {
+			css(oUl, "left", "-100%");
+		});
+	};
+
+	/*
+     * 上一个图片
+     **/
+	Banner.prototype.prev = function() {
+		var oUl = this.element.querySelector(".banner-list");
+
+		// 把图片排列
+		this.queue();
+
+		// 把索引--，并限制不要低于0
+		this.count--;
+		if (this.count < 0) {
+			this.count = this.images.length - 1;
+		}
+
+		// 给ul加动画，等播放完把动画干掉
+		css(oUl, "transition", "0.6s ease");
+		// 给代码延迟，为了让left有移动效果
+		window.setTimeout(function() {
+			css(oUl, "left", "-100%");
+		});
+	};
+
+	/*
+     * 自动播放
+     **/
+	Banner.prototype.autoPlay = function() {
+		var that = this;
+
+		// 先清空定时器，在进行自动播放
+		window.setInterval(this.autoPlayTimer);
+		this.autoPlayTimer = window.setInterval(function() {
+			that.next();
+		}, this.options.time);
 	};
 
 	/*

@@ -47,6 +47,8 @@
 		// 创建元素 *下面有这个方法的封装
 		this.createElement();
 
+		this.createBtn();
+
 		// 自动播放
 		if (this.options.autoPlay === true) this.autoPlay();
 		// 滚轮事件
@@ -124,6 +126,8 @@
 			window.setTimeout(function() {
 				that.clearQueue();
 				css(oUl, "left", 0);
+
+				that.moving = false;
 			});
 		});
 	};
@@ -159,6 +163,7 @@
 	Banner.prototype.clearQueue = function() {
 		var that = this;
 		// 获取所有Li
+
 		var aLi = this.element.querySelectorAll(".banner-list li");
 		// 把样式恢复到默认
 		forEach(aLi, function(oLi, index) {
@@ -174,7 +179,10 @@
      * 下一个图片
      **/
 	Banner.prototype.next = function() {
+		if (this.moving) return;
 		var oUl = this.element.querySelector(".banner-list");
+
+		this.moving = true;
 
 		// 把图片排列
 		this.queue();
@@ -197,7 +205,10 @@
      * 上一个图片
      **/
 	Banner.prototype.prev = function() {
+		if (this.moving) return;
 		var oUl = this.element.querySelector(".banner-list");
+
+		this.moving = true;
 
 		// 把图片排列
 		this.queue();
@@ -212,7 +223,7 @@
 		css(oUl, "transition", "0.6s ease");
 		// 给代码延迟，为了让left有移动效果
 		window.setTimeout(function() {
-			css(oUl, "left", "-100%");
+			css(oUl, "left", "100%");
 		});
 	};
 
@@ -227,6 +238,109 @@
 		this.autoPlayTimer = window.setInterval(function() {
 			that.next();
 		}, this.options.time);
+	};
+
+	/*
+     * 创建切换图片按钮
+     **/
+	Banner.prototype.createBtn = function() {
+		var that = this;
+		var prevBtn = document.createElement("a");
+		var nextBtn = document.createElement("a");
+		var prevIcon = document.createElement("span");
+		var nextIcon = document.createElement("span");
+
+		prevBtn.href = "javascript:void(0);";
+		nextBtn.href = "javascript:void(0);";
+
+		// 给a标签加样式
+		css(prevBtn, {
+			width: "40px",
+			height: "60px",
+			backgroundColor: "rgba(0,0,0,0.3)",
+			borderRadius: "3px",
+			cursor: "pointer",
+			position: "absolute",
+			left: "20px",
+			top: "50%",
+			zIndex: 1,
+			transform: "translateY(-50%)"
+		});
+		css(nextBtn, {
+			width: "40px",
+			height: "60px",
+			backgroundColor: "rgba(0,0,0,0.3)",
+			borderRadius: "3px",
+			cursor: "pointer",
+			position: "absolute",
+			right: "20px",
+			top: "50%",
+			zIndex: 1,
+			transform: "translateY(-50%)"
+		});
+
+		// 三角形箭头
+		css(prevIcon, {
+			border: "12px solid transparent",
+			borderRightColor: "#fff",
+			position: "absolute",
+			left: "3px",
+			top: "18px"
+		});
+		css(nextIcon, {
+			border: "12px solid transparent",
+			borderLeftColor: "#fff",
+			position: "absolute",
+			right: "3px",
+			top: "18px"
+		});
+
+		// 给a标签添加
+		prevBtn.onclick = function() {
+			// 因为prev方法里用了this.element，所以不能改this的指向
+			that.prev.call(that);
+
+			that.options.autoPlay && that.autoPlay();
+		};
+		nextBtn.onclick = function() {
+			// 因为next方法里用了this.element，所以不能改this的指向
+			that.next.call(that);
+
+			that.options.autoPlay && that.autoPlay();
+		};
+
+		// 添加Dom节点
+		prevBtn.appendChild(prevIcon);
+		nextBtn.appendChild(nextIcon);
+		this.element.appendChild(prevBtn);
+		this.element.appendChild(nextBtn);
+	};
+
+	/*
+     * 滚轮事件
+     **/
+	Banner.prototype.wheelEvent = function() {
+		var that = this;
+
+		wheelEvent(
+			window,
+			function() {
+				window.clearTimeout(that.wheelTimer);
+
+				that.wheelTimer = window.setTimeout(function() {
+					that.prev.call(that);
+					that.options.autoPlay && that.autoPlay();
+				}, 100);
+			},
+			function() {
+				window.clearTimeout(that.wheelTimer);
+
+				that.wheelTimer = window.setTimeout(function() {
+					that.next.call(that);
+					that.options.autoPlay && that.autoPlay();
+				}, 100);
+			}
+		);
 	};
 
 	/*
@@ -324,5 +438,47 @@
 				typeof fn === "function" && fn(obj[key], key, obj);
 			}
 		}
+	}
+	/*
+     * 监听滚动条事件，兼容写法
+     **/
+	function wheelEvent(obj, upFn, downFn) {
+		var prefix = "";
+		var _addEventListener = "";
+		var support = "";
+
+		// 判断浏览器支不支持addEventListener方法
+		if (window.addEventListener) {
+			// 如果支持用addEventListener
+			_addEventListener = "addEventListener";
+		} else {
+			// 如果不支持用attachEvent
+			_addEventListener = "attachEvent";
+			// *attachEvent绑定事件的时候前面要加on,所以给prefix存on，等绑定的时候用
+			prefix = "on";
+		}
+
+		// 判断该用哪一个事件
+		support =
+			"onwheel" in document.createElement("div")
+				? "wheel"
+				: document.onmousewheel !== undefined
+					? "mousewheel"
+					: "DOMMouseScroll";
+
+		// 事件绑定
+		obj[_addEventListener](prefix + support, function(ev) {
+			var oEvent = ev || window.event;
+
+			// 滚动方向 true为往下，false为网上
+			var down = oEvent.wheelDelta
+				? oEvent.wheelDelta < 0
+				: oEvent.wheelDelta > 0;
+
+			// 往下滚动，调用downFn callback
+			// 网上滚动，调用upFn callback
+			if (down) downFn && downFn(oEvent);
+			else upFn && upFn(oEvent);
+		});
 	}
 })();

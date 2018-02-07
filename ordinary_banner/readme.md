@@ -238,3 +238,114 @@ Banner.prototype.autoPlay = function() {
 	}, this.options.time);
 };
 ```
+
+下面是点击切换图片的方法，点击的话需要有元素，所以先创建了元素以后给元素加了事件，里面有一个小知识点，利用 border 做一个三角形。
+
+```JavaScript
+/*
+ * 创建切换图片按钮
+ **/
+Banner.prototype.createBtn = function() {
+    var that = this;
+    var prevBtn = document.createElement("a");
+    var nextBtn = document.createElement("a");
+    var prevIcon = document.createElement("span");
+    var nextIcon = document.createElement("span");
+
+    prevBtn.href = "javascript:void(0);";
+    nextBtn.href = "javascript:void(0);";
+
+    // 给a标签加样式
+    css(prevBtn, {
+        width: "40px",
+        height: "60px",
+        backgroundColor: "rgba(0,0,0,0.3)",
+        borderRadius: "3px",
+        cursor: "pointer",
+        position: "absolute",
+        left: "20px",
+        top: "50%",
+        zIndex: 1,
+        transform: "translateY(-50%)"
+    });
+    css(nextBtn, {
+        width: "40px",
+        height: "60px",
+        backgroundColor: "rgba(0,0,0,0.3)",
+        borderRadius: "3px",
+        cursor: "pointer",
+        position: "absolute",
+        right: "20px",
+        top: "50%",
+        zIndex: 1,
+        transform: "translateY(-50%)"
+    });
+
+    // 三角形箭头
+    css(prevIcon, {
+        border: "12px solid transparent",
+        borderRightColor: "#fff",
+        position: "absolute",
+        left: "3px",
+        top: "18px"
+    });
+    css(nextIcon, {
+        border: "12px solid transparent",
+        borderLeftColor: "#fff",
+        position: "absolute",
+        right: "3px",
+        top: "18px"
+    });
+
+    // 给a标签添加
+    prevBtn.onclick = function() {
+        // 因为prev方法里用了this.element，所以不能改this的指向
+        that.prev.call(that);
+
+        that.options.autoPlay && that.autoPlay();
+    };
+    nextBtn.onclick = function() {
+        // 因为next方法里用了this.element，所以不能改this的指向
+        that.next.call(that);
+
+        that.options.autoPlay && that.autoPlay();
+    };
+
+    // 添加Dom节点
+    prevBtn.appendChild(prevIcon);
+    nextBtn.appendChild(nextIcon);
+    this.element.appendChild(prevBtn);
+    this.element.appendChild(nextBtn);
+};
+```
+
+滚轮的方法是跟之前一样的，所以没有加上注释，唯一一个不同点就是，存定时器的属性是一个，之前是两个，之前的封装里有一个问题就是，向上滚完在向下滚就会出现无法清掉向上滚时候的定时器，这回用一个属性就解决了问题。
+
+```JavaScript
+/*
+ * 滚轮事件
+ **/
+Banner.prototype.wheelEvent = function() {
+    var that = this;
+
+    wheelEvent(
+        window,
+        function() {
+            window.clearTimeout(that.wheelTimer);
+
+            that.wheelTimer = window.setTimeout(function() {
+                that.prev.call(that);
+                that.options.autoPlay && that.autoPlay();
+            }, 100);
+        },
+        function() {
+            window.clearTimeout(that.wheelTimer);
+
+            that.wheelTimer = window.setTimeout(function() {
+                that.next.call(that);
+                that.options.autoPlay && that.autoPlay();
+            }, 100);
+        }
+    );
+};
+```

@@ -299,21 +299,4 @@ var bannerSwiper = function(element,images,bgs,viewStatus){
           window.clearInterval($ul[0].timer);
       }
 }
-bannerSwiper($('#bannerBox), [
-    {
-        "src":"http://d9.yihaodianimg.com/N09/M01/A9/AC/ChEi2Fp9OaiABQIAAAMH_HVimLM82200.png",
-        "src3x":"http://d7.yihaodianimg.com/N09/M00/EC/46/ChEi11i2o_aANIPnAAIvX8B8WOw88700.jpg",
-        "link":"#2"
-    },
-    {
-        "src":" http://d8.yihaodianimg.com/N10/M01/97/D2/ChEi2lpm6uuAC957AACf6i4Q-ag68500_1030x442.jpg",
-        "src3x":"http://10.8.129.219:9000/1026x496",
-        "link":"#3"
-    },
-    {
-        "src":"http://d7.yihaodianimg.com/N09/M07/A8/FD/ChEi11pm6tWAVw0iAAMGplXwO9s29200_1242x792.jpg",
-        "src3x":"http://d8.yihaodianimg.com/N10/M08/60/3F/ChEi2livzsiAIgyeAAFMuPy3T_Q31100.jpg",
-        "link":"#4"
-    }
-]);
        

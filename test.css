@@ -1,1 +1,134 @@
+#bannerBox {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+#bannerBox img {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    // top: -30px;
+    transition: opacity 0.3s linear;
+}
+#bannerBox .banner-list {
+    position: absolute;
+}
+#bannerBox .banner-list li {
+    float: left;
+}
+#bannerBox .banner-list li a {
+    width: 100%;
+    height: 100%;
+    background: no-repeat;
+    display: block;
+    transform: scale(0.86);
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.4);
+    border-radius: 3px;
+}
+#bannerBox .banner-list li.active a {
+    transform: scale(1);
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.4);
+}
+#bannerBox .icon-list {
+    position: absolute;
+}
+#bannerBox .icon-list li {
+    width: 4px;
+    height: 4px;
+    border: 1px solid #b2b2b2;
+    border-radius: 50%;
+    float: left;
+    margin: 0 2px;
+}
+#bannerBox .icon-list li.cur {
+    background-color: #b2b2b2;
+}
 
+.touchweb_page-index2017 .touchweb_components-headerMenu{
+    padding: 0;
+}
+.touchweb_page-index2017 .hot-tit-box{
+    margin-top: 10px;
+}
+#bannerBox{
+    height: 239px;
+}
+.icons_bg{
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+}
+.for_women_day_icon {
+    position: relative;
+}
+.touchweb_page-index2017 .touchweb_components-headerMenu .item{
+    padding: 5px 0;
+}
+.for_women_day_entry{
+    display: block;
+    position: relative;
+    .main_hall_bg{
+        width: 100%;
+        position: relative;
+        left: 0;
+        top: 0;
+    }
+    .user_pic{
+        position: absolute;
+        width: 22.5%;
+        left: 4%;
+        bottom:10px;
+        z-index: -1;
+    }
+}
+.icon_str{
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    transform: translate(-50%,-50%);
+    font-weight: bold;
+}
+.preview-mask{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    background-color: rgba(0,0,0,.5);
+    left: 0;
+    z-index: 99999;
+    .share_button{
+        width:39.5%;
+        position: absolute;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        .share_text{
+            font-size: 1.6rem;
+            color: #fff;
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            transform: translate(-50%,-50%);
+            line-height: 1em;
+        }
+        img{
+            width: 100%;
+        }
+    }
+}
+.share-mask-for-women{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999999;
+    img{
+        width: 100%;
+    }
+}
+.touchweb_page-index2017 .daily_banner_bg{
+    width: 100%;
+}
